@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image Gallery</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&amp;family=Inter:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
+  <style>
+    body {
+      box-sizing: border-box;
+    }
+    
+    .gallery-item {
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .gallery-item:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+    }
+    
+    .gallery-item:hover .image-overlay {
+      opacity: 1;
+    }
+    
+    .gallery-item:hover img {
+      transform: scale(1.1);
+    }
+    
+    .image-overlay {
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+    
+    .gallery-item img {
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .lightbox {
+      animation: fadeIn 0.3s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    @keyframes slideIn {
+      from { 
+        opacity: 0; 
+        transform: scale(0.9) translateY(20px); 
+      }
+      to { 
+        opacity: 1; 
+        transform: scale(1) translateY(0); 
+      }
+    }
+    
+    .lightbox-content {
+      animation: slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .category-btn {
+      transition: all 0.3s ease;
+    }
+    
+    .category-btn:hover {
+      transform: translateY(-2px);
+    }
+    
+    .category-btn.active {
+      transform: scale(1.05);
+    }
+    
+    .filter-btn {
+      transition: all 0.3s ease;
+    }
+    
+    .filter-btn:hover {
+      transform: scale(1.05);
+    }
+    
+    .filter-btn.active {
+      box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.4);
+    }
+    
+    .nav-btn {
+      transition: all 0.3s ease;
+    }
+    
+    .nav-btn:hover {
+      transform: scale(1.1);
+    }
+    
+    .nav-btn:active {
+      transform: scale(0.95);
+    }
+    
+    /* Image filters */
+    .filter-none { filter: none; }
+    .filter-grayscale { filter: grayscale(100%); }
+    .filter-sepia { filter: sepia(100%); }
+    .filter-contrast { filter: contrast(130%); }
+    .filter-saturate { filter: saturate(150%); }
+    .filter-blur { filter: blur(2px); }
+    .filter-vintage { filter: sepia(50%) contrast(90%) brightness(90%); }
+    
+    .masonry-grid {
+      column-count: 3;
+      column-gap: 1.5rem;
+    }
+    
+    @media (max-width: 1024px) {
+      .masonry-grid {
+        column-count: 2;
+      }
+    }
+    
+    @media (max-width: 640px) {
+      .masonry-grid {
+        column-count: 1;
+      }
+    }
+    
+    .masonry-item {
+      break-inside: avoid;
+      margin-bottom: 1.5rem;
+    }
+    
+    .gradient-bg {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    }
+    
+    .gold-accent {
+      color: #d4af37;
+    }
+    
+    .gold-bg {
+      background-color: #d4af37;
+    }
+  </style>
+ </head>
+ <body class="h-full gradient-bg">
+  <div id="app" class="h-full w-full overflow-auto">
+   <!-- Header -->
+   <header class="text-center py-12 px-4">
+    <h1 id="gallery-title" class="text-5xl md:text-6xl font-bold text-white mb-4" style="font-family: 'Playfair Display', serif;">Curated Gallery</h1>
+    <p id="subtitle" class="text-lg text-gray-300 max-w-2xl mx-auto" style="font-family: 'Inter', sans-serif;">Explore our stunning collection of artistic photography</p>
+   </header>
+   <!-- Category Filters -->
+   <div class="flex flex-wrap justify-center gap-3 px-4 mb-8"><button class="category-btn active px-6 py-2.5 rounded-full text-sm font-medium gold-bg text-gray-900 shadow-lg" data-category="all" style="font-family: 'Inter', sans-serif;"> All </button> <button class="category-btn px-6 py-2.5 rounded-full text-sm font-medium bg-white/10 text-white backdrop-blur-sm hover:bg-white/20" data-category="nature" style="font-family: 'Inter', sans-serif;"> 🌿 Nature </button> <button class="category-btn px-6 py-2.5 rounded-full text-sm font-medium bg-white/10 text-white backdrop-blur-sm hover:bg-white/20" data-category="architecture" style="font-family: 'Inter', sans-serif;"> 🏛️ Architecture </button> <button class="category-btn px-6 py-2.5 rounded-full text-sm font-medium bg-white/10 text-white backdrop-blur-sm hover:bg-white/20" data-category="abstract" style="font-family: 'Inter', sans-serif;"> 🎨 Abstract </button> <button class="category-btn px-6 py-2.5 rounded-full text-sm font-medium bg-white/10 text-white backdrop-blur-sm hover:bg-white/20" data-category="portrait" style="font-family: 'Inter', sans-serif;"> 👤 Portrait </button>
+   </div>
+   <!-- Image Filters -->
+   <div class="flex flex-wrap justify-center gap-2 px-4 mb-10"><span class="text-gray-400 text-sm mr-2 self-center" style="font-family: 'Inter', sans-serif;">Filters:</span> <button class="filter-btn active px-4 py-1.5 rounded-full text-xs font-medium bg-white/10 text-white" data-filter="none">None</button> <button class="filter-btn px-4 py-1.5 rounded-full text-xs font-medium bg-white/10 text-white" data-filter="grayscale">B&amp;W</button> <button class="filter-btn px-4 py-1.5 rounded-full text-xs font-medium bg-white/10 text-white" data-filter="sepia">Sepia</button> <button class="filter-btn px-4 py-1.5 rounded-full text-xs font-medium bg-white/10 text-white" data-filter="contrast">Contrast</button> <button class="filter-btn px-4 py-1.5 rounded-full text-xs font-medium bg-white/10 text-white" data-filter="saturate">Vivid</button> <button class="filter-btn px-4 py-1.5 rounded-full text-xs font-medium bg-white/10 text-white" data-filter="vintage">Vintage</button>
+   </div>
+   <!-- Gallery Grid -->
+   <div id="gallery" class="masonry-grid max-w-7xl mx-auto px-4 pb-16"><!-- Images will be inserted here -->
+   </div>
+   <!-- Lightbox -->
+   <div id="lightbox" class="lightbox fixed inset-0 bg-black/95 z-50 hidden items-center justify-center p-4"><button id="close-lightbox" class="absolute top-4 right-4 text-white/80 hover:text-white text-4xl font-light z-10 w-12 h-12 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 transition-all"> × </button> <button id="prev-btn" class="nav-btn absolute left-4 top-1/2 -translate-y-1/2 text-white/80 hover:text-white w-14 h-14 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm">
+     <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewbox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+     </svg></button>
+    <div class="lightbox-content max-w-5xl max-h-full flex flex-col items-center">
+     <div id="lightbox-image-container" class="relative">
+      <div id="lightbox-image" class="max-h-[70vh] rounded-lg shadow-2xl"></div>
+     </div>
+     <div class="mt-6 text-center">
+      <h3 id="lightbox-title" class="text-2xl font-semibold text-white mb-2" style="font-family: 'Playfair Display', serif;"></h3>
+      <p id="lightbox-category" class="gold-accent text-sm uppercase tracking-wider" style="font-family: 'Inter', sans-serif;"></p>
+     </div>
+     <div class="mt-4 flex gap-2"><span id="image-counter" class="text-gray-400 text-sm" style="font-family: 'Inter', sans-serif;"></span>
+     </div>
+    </div><button id="next-btn" class="nav-btn absolute right-4 top-1/2 -translate-y-1/2 text-white/80 hover:text-white w-14 h-14 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm">
+     <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewbox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+     </svg></button>
+   </div>
+  </div>
+  <script>
+    // Gallery data with real images
+    const galleryData = [
+      { id: 1, title: "Mountain Sunrise", category: "nature", url: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&h=800&fit=crop" },
+      { id: 2, title: "Urban Geometry", category: "architecture", url: "https://images.unsplash.com/photo-1486325212027-8081e485255e?w=600&h=900&fit=crop" },
+      { id: 3, title: "Color Waves", category: "abstract", url: "https://images.unsplash.com/photo-1557672172-298e090bd0f1?w=600&h=700&fit=crop" },
+      { id: 4, title: "Forest Path", category: "nature", url: "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=600&h=850&fit=crop" },
+      { id: 5, title: "Glass Tower", category: "architecture", url: "https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=600&h=950&fit=crop" },
+      { id: 6, title: "Dreamer", category: "portrait", url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=800&fit=crop" },
+      { id: 7, title: "Ocean Depths", category: "nature", url: "https://images.unsplash.com/photo-1505142468610-359e7d316be0?w=600&h=750&fit=crop" },
+      { id: 8, title: "Neon Dreams", category: "abstract", url: "https://images.unsplash.com/photo-1550859492-d5da9d8e45f3?w=600&h=850&fit=crop" },
+      { id: 9, title: "Historic Bridge", category: "architecture", url: "https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=600&h=800&fit=crop" },
+      { id: 10, title: "Serene Portrait", category: "portrait", url: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=600&h=900&fit=crop" },
+      { id: 11, title: "Autumn Leaves", category: "nature", url: "https://images.unsplash.com/photo-1507514582769-feb560469095?w=600&h=750&fit=crop" },
+      { id: 12, title: "Digital Flow", category: "abstract", url: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=600&h=800&fit=crop" },
+    ];
+
+
+
+    // State
+    let currentFilter = 'none';
+    let currentCategory = 'all';
+    let currentIndex = 0;
+    let filteredImages = [...galleryData];
+
+    // Default config
+    const defaultConfig = {
+      gallery_title: 'Curated Gallery',
+      subtitle_text: 'Explore our stunning collection of artistic photography',
+      primary_color: '#d4af37',
+      background_color: '#1a1a2e',
+      text_color: '#ffffff',
+      secondary_color: '#16213e',
+      accent_color: '#0f3460'
+    };
+
+    // Render gallery
+    function renderGallery() {
+      const gallery = document.getElementById('gallery');
+      gallery.innerHTML = '';
+      
+      filteredImages = currentCategory === 'all' 
+        ? [...galleryData] 
+        : galleryData.filter(img => img.category === currentCategory);
+      
+      filteredImages.forEach((item, index) => {
+        const div = document.createElement('div');
+        div.className = 'masonry-item gallery-item cursor-pointer rounded-xl overflow-hidden relative shadow-xl';
+        div.dataset.index = index;
+        div.innerHTML = `
+          <img src="${item.url}" alt="${item.title}" class="w-full h-auto filter-${currentFilter}" loading="lazy" onerror="console.error('Image failed to load:', this.src); this.style.background='linear-gradient(135deg, #667eea 0%, #764ba2 100%)'; this.alt='Image unavailable';">
+          <div class="image-overlay absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-5">
+            <h3 class="text-white text-lg font-semibold mb-1" style="font-family: 'Playfair Display', serif;">${item.title}</h3>
+            <span class="gold-accent text-xs uppercase tracking-wider" style="font-family: 'Inter', sans-serif;">${item.category}</span>
+          </div>
+        `;
+        div.addEventListener('click', () => openLightbox(index));
+        gallery.appendChild(div);
+      });
+    }
+
+    // Lightbox functions
+    function openLightbox(index) {
+      currentIndex = index;
+      updateLightboxContent();
+      document.getElementById('lightbox').classList.remove('hidden');
+      document.getElementById('lightbox').classList.add('flex');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+      document.getElementById('lightbox').classList.add('hidden');
+      document.getElementById('lightbox').classList.remove('flex');
+      document.body.style.overflow = '';
+    }
+
+    function updateLightboxContent() {
+      const item = filteredImages[currentIndex];
+      const container = document.getElementById('lightbox-image');
+      container.innerHTML = `<img src="${item.url}" alt="${item.title}" class="max-h-[70vh] rounded-lg shadow-2xl filter-${currentFilter}" loading="lazy" onerror="console.error('Image failed to load:', this.src); this.style.background='linear-gradient(135deg, #667eea 0%, #764ba2 100%)'; this.alt='Image unavailable';">`;
+      
+      document.getElementById('lightbox-title').textContent = item.title;
+      document.getElementById('lightbox-category').textContent = item.category;
+      document.getElementById('image-counter').textContent = `${currentIndex + 1} / ${filteredImages.length}`;
+    }
+
+    function nextImage() {
+      currentIndex = (currentIndex + 1) % filteredImages.length;
+      updateLightboxContent();
+    }
+
+    function prevImage() {
+      currentIndex = (currentIndex - 1 + filteredImages.length) % filteredImages.length;
+      updateLightboxContent();
+    }
+
+    // Event listeners
+    document.getElementById('close-lightbox').addEventListener('click', closeLightbox);
+    document.getElementById('next-btn').addEventListener('click', nextImage);
+    document.getElementById('prev-btn').addEventListener('click', prevImage);
+
+    document.getElementById('lightbox').addEventListener('click', (e) => {
+      if (e.target.id === 'lightbox') closeLightbox();
+    });
+
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+      const lightbox = document.getElementById('lightbox');
+      if (!lightbox.classList.contains('hidden')) {
+        if (e.key === 'ArrowRight') nextImage();
+        if (e.key === 'ArrowLeft') prevImage();
+        if (e.key === 'Escape') closeLightbox();
+      }
+    });
+
+    // Category filters
+    document.querySelectorAll('.category-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.category-btn').forEach(b => {
+          b.classList.remove('active', 'gold-bg', 'text-gray-900');
+          b.classList.add('bg-white/10', 'text-white');
+        });
+        btn.classList.add('active', 'gold-bg', 'text-gray-900');
+        btn.classList.remove('bg-white/10', 'text-white');
+        currentCategory = btn.dataset.category;
+        renderGallery();
+      });
+    });
+
+    // Image filters
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentFilter = btn.dataset.filter;
+        renderGallery();
+      });
+    });
+
+    // Element SDK integration
+    async function onConfigChange(config) {
+      const title = config.gallery_title || defaultConfig.gallery_title;
+      const subtitle = config.subtitle_text || defaultConfig.subtitle_text;
+      
+      document.getElementById('gallery-title').textContent = title;
+      document.getElementById('subtitle').textContent = subtitle;
+    }
+
+    function mapToCapabilities(config) {
+      return {
+        recolorables: [],
+        borderables: [],
+        fontEditable: undefined,
+        fontSizeable: undefined
+      };
+    }
+
+    function mapToEditPanelValues(config) {
+      return new Map([
+        ['gallery_title', config.gallery_title || defaultConfig.gallery_title],
+        ['subtitle_text', config.subtitle_text || defaultConfig.subtitle_text]
+      ]);
+    }
+
+    // Initialize
+    renderGallery();
+  </script>
+ </body>
+</html>
